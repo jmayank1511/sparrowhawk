@@ -1,0 +1,25 @@
+import 'measure.grm' as M;
+import 'punctuation.grm' as p;
+import '../util.grm' as u;
+import 'word.grm' as w;
+
+CARDINAL = LoadFstFromFar['cardinal_classify.far', 'CARDINAL'];
+ORDINAL = LoadFstFromFar['ordinal_classify.far', 'ORDINAL'];
+DECIMAL = LoadFstFromFar['decimal_classify.far', 'DECIMAL'];
+MEASURE = LoadFstFromFar['measure_classify.far', 'MEASURE'];
+TIME = LoadFstFromFar['time_classify.far', 'TIME'];
+DATE = LoadFstFromFar['date_classify.far', 'DATE'];
+WORD = LoadFstFromFar['word_classify.far', 'WORD'];
+
+types = DATE | ORDINAL | DECIMAL | MEASURE | CARDINAL | TIME | WORD;
+
+token = u.I["tokens { "] types u.I[" }"];
+
+token_plus_punct = (p.PUNCT u.I[" "])* token (u.I[" "] p.PUNCT)*;
+
+# Collection of all possible semiotic classes, including ordinary words.
+
+export TOKENIZE_AND_CLASSIFY =
+  Optimize[token_plus_punct (" " token_plus_punct)*]
+;
+
