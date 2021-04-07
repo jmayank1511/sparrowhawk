@@ -30,13 +30,13 @@ namespace sparrowhawk {
 #define LoggerFormat(format) \
   string(string("[%s:%s:%d] ") + format).c_str()
 
-#define LoggerMessage(type, format, ...)         \
-  fprintf(stderr, \
-          LoggerFormat(format), \
-          type,              \
-          __FILE__,             \
-          __LINE__,             \
-          ##__VA_ARGS__)
+#define LoggerMessage(type, format, ...)
+  // fprintf(stderr, \
+  //         LoggerFormat(format), \
+  //         type,              \
+  //         __FILE__,             \
+  //         __LINE__,             \
+  //         ##__VA_ARGS__)
 
 #define LoggerDebug(format, ...) LoggerMessage("DEBUG", format, ##__VA_ARGS__)
 
@@ -44,7 +44,8 @@ namespace sparrowhawk {
 
 #define LoggerFatal(format, ...) { \
   LoggerMessage("FATAL", format, ##__VA_ARGS__);        \
-  exit(1); }                                        \
+  } //exit(1); }                                          \
+
 
 #define LoggerInfo(format, ...) LoggerMessage("INFO", format, ##__VA_ARGS__)
 
