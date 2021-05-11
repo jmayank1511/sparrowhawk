@@ -35,8 +35,12 @@ SentenceBoundary::SentenceBoundary(const string &regexp) :
   }
 }
 
-bool SentenceBoundary::LoadSentenceBoundaryExceptions(const string &filename) {
-  string raw = IOStream::LoadFileToString(filename);
+bool SentenceBoundary::LoadSentenceBoundaryExceptions(const string &filename, const string &prefix) {
+  string path = prefix + "/" + filename;
+  if (prefix.empty()){
+    path = filename;
+  }
+  string raw = IOStream::LoadFileToString(path);
   std::vector<string> tokens = SplitString(raw, "\n", true /* skip_empty */);
   for (auto token : tokens) {
     token = StripWhitespace(token);

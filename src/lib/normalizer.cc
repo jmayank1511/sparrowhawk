@@ -68,7 +68,7 @@ bool Normalizer::Setup(const string &configuration_proto,
   sentence_boundary_.reset(new SentenceBoundary(sentence_boundary_regexp));
   if (configuration.has_sentence_boundary_exceptions_file()) {
     if (!sentence_boundary_->LoadSentenceBoundaryExceptions(
-            configuration.sentence_boundary_exceptions_file())) {
+            configuration.sentence_boundary_exceptions_file(), pathname_prefix)) {
       LoggerError("Cannot load sentence boundary exceptions file: %s",
                   configuration.sentence_boundary_exceptions_file().c_str());
     }

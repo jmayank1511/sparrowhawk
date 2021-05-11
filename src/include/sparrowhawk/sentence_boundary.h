@@ -38,7 +38,7 @@ class SentenceBoundary {
   // "Y!", or whatever.  Note that these are all case sensitive, so one must
   // provide alternate forms if one expects that the form may be cased
   // differently.
-  bool LoadSentenceBoundaryExceptions(const string &filename);
+    bool LoadSentenceBoundaryExceptions(const string &filename, const string &prefix);
 
   std::vector<string> ExtractSentences(const string &input_text) const;
 
