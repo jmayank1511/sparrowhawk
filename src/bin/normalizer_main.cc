@@ -58,22 +58,15 @@ void NormalizeInput(const string& input,
 int main(int argc, char** argv) {
   using speech::sparrowhawk::Normalizer;
   std::set_new_handler(FailedNewHandler);
-  SET_FLAGS(argv[0], &argc, &argv, true);
+  //SET_FLAGS(argv[0], &argc, &argv, true);
   std::unique_ptr<Normalizer> normalizer;
   normalizer.reset(new Normalizer());
-  CHECK(normalizer->Setup(FLAGS_config, FLAGS_path_prefix));
+  std::string config = "/opt/jarvis/itn_configs/";
+  std::string path_prefix = "";
+  CHECK(normalizer->Setup(config, path_prefix));
   string input;
-  if (FLAGS_multi_line_text) {
-    string line;
-    while (std::getline(std::cin, line)) {
-      if (!input.empty()) input += " ";
-      input += line;
-    }
+  while (std::getline(std::cin, input)) {
     NormalizeInput(input, normalizer.get());
-  } else {
-    while (std::getline(std::cin, input)) {
-      NormalizeInput(input, normalizer.get());
-    }
   }
   return 0;
 }
