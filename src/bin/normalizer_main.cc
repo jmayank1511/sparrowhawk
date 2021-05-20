@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
   //SET_FLAGS(argv[0], &argc, &argv, true);
   std::unique_ptr<Normalizer> normalizer;
   normalizer.reset(new Normalizer());
-  std::string config = "/opt/jarvis/itn_configs/";
+  std::string config = "/opt/jarvis/itn_configs/sparrowhawk_configuration.ascii_proto";
   std::string path_prefix = "";
   CHECK(normalizer->Setup(config, path_prefix));
   string input;
