@@ -31,11 +31,17 @@ RuleSystem::~RuleSystem() {
 }
 
 bool RuleSystem::LoadGrammar(const string& filename, const string& prefix) {
+
+  std::string sep = "";
+  if (prefix[prefix.size() - 1] != '/') {
+    sep = "/";
+  }
+
   // This is the contents of filename.
-  string proto_string = IOStream::LoadFileToString(prefix + filename);
+  string proto_string = IOStream::LoadFileToString(prefix + sep + filename);
   if (!google::protobuf::TextFormat::ParseFromString(proto_string, &grammar_))
     return false;
-  string grm_file = prefix + grammar_.grammar_file();
+  string grm_file = prefix + sep + grammar_.grammar_file();
   grammar_name_ = grammar_.grammar_name();
   grm_.reset(new GrmManager);
   if (!grm_->LoadArchive(grm_file)) {
