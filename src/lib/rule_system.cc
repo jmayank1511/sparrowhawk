@@ -39,7 +39,7 @@ bool RuleSystem::LoadGrammar(const string& filename, const string& prefix) {
 
   // This is the contents of filename.
   string proto_string = IOStream::LoadFileToString(prefix + sep + filename);
-  LoadGrammarProtoFromString(proto_string, prefix);
+  return LoadGrammarProtoFromString(proto_string, prefix + sep);
 }
 
 bool RuleSystem::LoadGrammarProtoFromString(const string& proto_string, const string& prefix)
@@ -47,7 +47,7 @@ bool RuleSystem::LoadGrammarProtoFromString(const string& proto_string, const st
 
   if (!google::protobuf::TextFormat::ParseFromString(proto_string, &grammar_))
     return false;
-  string grm_file = prefix + sep + grammar_.grammar_file();
+  string grm_file = prefix + grammar_.grammar_file();
   grammar_name_ = grammar_.grammar_name();
   grm_.reset(new GrmManager);
   if (!grm_->LoadArchive(grm_file)) {

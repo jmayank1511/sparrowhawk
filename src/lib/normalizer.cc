@@ -41,7 +41,7 @@ const std::string kDefaultTokenizerProto =
   "grammar_file: \"tokenize_and_classify.far\"\ngrammar_name: \"TokenizerClassifier\"\nrules { main: \"TOKENIZE_AND_CLASSIFY\" }\n";
 
 
-std::vector<std::string> kDefaultSentenceBoundaryExceptions = {"Mr.", "Dr.", "Mrs.", "St.", "Jan.", "Feb.", "Mar.", "Apr.", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec." };'
+std::vector<std::string> kDefaultSentenceBoundaryExceptions = {"Mr.", "Dr.", "Mrs.", "St.", "Jan.", "Feb.", "Mar.", "Apr.", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec." };
 
 Normalizer::Normalizer() { }
 
@@ -63,12 +63,12 @@ bool Normalizer::Setup(const string &pathname)
   tokenizer_classifier_rules_.reset(new RuleSystem);
   if (!tokenizer_classifier_rules_->LoadGrammarProtoFromString(
           kDefaultTokenizerProto,
-          pathname_prefix))
+          pathname))
     return false;
 
   verbalizer_rules_.reset(new RuleSystem);
   if (!verbalizer_rules_->LoadGrammarProtoFromString(kDefaultVerbalizerProto,
-                                      pathname_prefix))
+                                      pathname))
     return false;
 
   string sentence_boundary_regexp = kDefaultSentenceBoundaryRegexp;
