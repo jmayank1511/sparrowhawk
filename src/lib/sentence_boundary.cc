@@ -42,7 +42,12 @@ bool SentenceBoundary::LoadSentenceBoundaryExceptions(const string &filename, co
   }
   string raw = IOStream::LoadFileToString(path);
   std::vector<string> tokens = SplitString(raw, "\n", true /* skip_empty */);
-  for (auto token : tokens) {
+  return AddSentenceBoundaryExceptions(tokens);
+}
+
+bool SentenceBoundary::AddSentenceBoundaryExceptions(std::vector<string> &toks) {
+
+  for (auto token : toks) {
     token = StripWhitespace(token);
     // Having it as an unordered list is of course not very efficient for
     // search, but we do not expect these lists to be very long.

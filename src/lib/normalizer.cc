@@ -35,9 +35,48 @@ namespace sparrowhawk {
 // TODO(rws): We actually need to do something with this.
 const char kDefaultSentenceBoundaryRegexp[] = "[\\.:!\\?] ";
 
+const std::string kDefaultVerbalizerProto =
+  "grammar_file: \"verbalize.far\"\ngrammar_name: \"Verbalizer\"\nrules { main: \"ALL\" redup: \"REDUP\" }\n";
+const std::string kDefaultTokenizerProto =
+  "grammar_file: \"tokenize_and_classify.far\"\ngrammar_name: \"TokenizerClassifier\"\nrules { main: \"TOKENIZE_AND_CLASSIFY\" }\n";
+
+
+std::vector<std::string> kDefaultSentenceBoundaryExceptions = {"Mr.", "Dr.", "Mrs.", "St.", "Jan.", "Feb.", "Mar.", "Apr.", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec." };'
+
 Normalizer::Normalizer() { }
 
 Normalizer::~Normalizer() { }
+
+  //Riva specific entry with defaults
+bool Normalizer::Setup(const string &pathname)
+{
+  SparrowhawkConfiguration configuration;
+  string proto_string = "tokenizer_grammar:  \"tokenizer.ascii_proto\""
+                        "verbalizer_grammar:  \"verbalizer.ascii_proto\""
+                        "sentence_boundary_regexp: \"[\\.:!\\?] \""
+    "sentence_boundary_exceptions_file: \"sentence_boundary_exceptions.txt\"";
+
+
+  if (!google::protobuf::TextFormat::ParseFromString(proto_string, &configuration))
+    return false;
+
+  tokenizer_classifier_rules_.reset(new RuleSystem);
+  if (!tokenizer_classifier_rules_->LoadGrammarProtoFromString(
+          kDefaultTokenizerProto,
+          pathname_prefix))
+    return false;
+
+  verbalizer_rules_.reset(new RuleSystem);
+  if (!verbalizer_rules_->LoadGrammarProtoFromString(kDefaultVerbalizerProto,
+                                      pathname_prefix))
+    return false;
+
+  string sentence_boundary_regexp = kDefaultSentenceBoundaryRegexp;
+  sentence_boundary_.reset(new SentenceBoundary(sentence_boundary_regexp));
+  sentence_boundary_->AddSentenceBoundaryExceptions(kDefaultSentenceBoundaryExceptions);
+
+  return true;
+}
 
 bool Normalizer::Setup(const string &configuration_proto,
                        const string &pathname_prefix) {
