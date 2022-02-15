@@ -51,11 +51,10 @@ Normalizer::~Normalizer() { }
 bool Normalizer::Setup(const string &pathname)
 {
   SparrowhawkConfiguration configuration;
-  string proto_string = "tokenizer_grammar:  \"tokenizer.ascii_proto\""
-                        "verbalizer_grammar:  \"verbalizer.ascii_proto\""
-                        "sentence_boundary_regexp: \"[\\.:!\\?] \""
-    "sentence_boundary_exceptions_file: \"sentence_boundary_exceptions.txt\"";
-
+  string proto_string = "tokenizer_grammar:  \"tokenizer.ascii_proto\"\n"
+                        "verbalizer_grammar:  \"verbalizer.ascii_proto\"\n"
+                        "sentence_boundary_regexp: \"[\\\\.:!\\\\?] \"\n"
+    "sentence_boundary_exceptions_file: \"sentence_boundary_exceptions.txt\"\n";
 
   if (!google::protobuf::TextFormat::ParseFromString(proto_string, &configuration))
     return false;
