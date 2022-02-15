@@ -56,6 +56,14 @@ class Normalizer {
   // indicate where each function is found.
 
   // normalizer.cc
+  // Load data from path with defaults
+  // assume the path specific has the following two files
+  // tokenize_and_classify.far, verbalizer.far
+  // sentence bnoundaries are loaded as defaults
+  //
+  bool Setup(const string &path);
+
+  // normalizer.cc
   // Method to load and set data for each derived method
   bool Setup(const string &configuration_proto, const string &pathname_prefix);
 

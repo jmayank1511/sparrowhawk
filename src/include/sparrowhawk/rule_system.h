@@ -46,6 +46,9 @@ class RuleSystem {
   RuleSystem() { }
   ~RuleSystem();
 
+  // Loads grammars in the directory specified.
+  bool LoadGrammarProtoFromString(const string& proto_string, const string& prefix);
+
   // Loads a protobuf containing the filename of the grammar far
   // and the rule specifications as defined in rule_order.proto.
   bool LoadGrammar(const string& filename, const string& prefix);
