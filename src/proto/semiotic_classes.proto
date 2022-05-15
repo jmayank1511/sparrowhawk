@@ -68,7 +68,7 @@ message Fraction {
   // bilingual languages, e.g. when switching between English and Hindi
   // depending on context.
   optional string code_switch = 7;
-  optional bool negative = 8;
+  optional string negative = 8;
   repeated string field_order = 9;
 }
 
@@ -162,7 +162,7 @@ message Date {
   optional string year = 4;
   optional int32 style = 5 [deprecated = true];
   optional string text = 6 [deprecated = true];
-  optional bool short_year = 7 [deprecated = true];
+  optional string short_year = 7 [deprecated = true];
   optional string era = 8;
   optional string morphosyntactic_features = 9;
   optional bool preserve_order = 10;
@@ -185,7 +185,7 @@ message Money {
   // Lowercase ISO4217 currency code, e.g. "usd".
   // List of minimally supported set of currencies:
   // grammars/verbalize/universal/money_definition.txt
-  required string currency = 4;
+  optional string currency = 4;
   optional int32 style = 5  [deprecated = true];
   optional string morphosyntactic_features = 6;
   optional bool preserve_order = 7;
@@ -193,7 +193,9 @@ message Money {
   // bilingual languages, e.g. when switching between English and Hindi
   // depending on context.
   optional string code_switch = 8;
-  repeated string field_order = 9;
+  optional string currency_min = 9;
+  optional string currency_maj = 10;
+  repeated string field_order = 11;
 }
 
 // A telephone number.
