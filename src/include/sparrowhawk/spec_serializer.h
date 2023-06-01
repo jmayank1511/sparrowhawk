@@ -55,7 +55,7 @@ class Serializer {
   typedef fst::StringCompiler<Arc> StringCompiler;
 
   // Only used by the factory function Create.
-  Serializer() : string_compiler_(fst::TokenType::BYTE) {}
+  Serializer() : string_compiler_(fst::StringTokenType::BYTE) {}
 
   // String Compiler for making fsts from strings.
   StringCompiler string_compiler_;

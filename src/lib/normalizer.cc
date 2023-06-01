@@ -150,7 +150,7 @@ bool Normalizer::NormalizeAndShowLinks(
 bool Normalizer::TokenizeAndClassifyUtt(Utterance *utt,
                                         const string &input) const {
   typedef fst::StringCompiler<fst::StdArc> Compiler;  // what is this
-  Compiler compiler(fst::TokenType::BYTE);
+  Compiler compiler(fst::StringTokenType::BYTE);
   MutableTransducer input_fst, output;
   if (!compiler(input, &input_fst)) {
     LoggerError("Failed to compile input string \"%s\"", input.c_str());
