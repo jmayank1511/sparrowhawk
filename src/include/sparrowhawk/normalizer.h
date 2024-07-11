@@ -61,7 +61,7 @@ class Normalizer {
   // tokenize_and_classify.far, verbalizer.far
   // sentence bnoundaries are loaded as defaults
   //
-  bool Setup(const string &path);
+  bool Setup(const string &path, bool post_process=false, bool pre_process=false);
 
   // normalizer.cc
   // Method to load and set data for each derived method
@@ -151,9 +151,14 @@ class Normalizer {
   string input_;
   std::unique_ptr<RuleSystem> tokenizer_classifier_rules_;
   std::unique_ptr<RuleSystem> verbalizer_rules_;
+  std::unique_ptr<RuleSystem> pre_processor_rules_;
+  std::unique_ptr<RuleSystem> post_processor_rules_;
   std::unique_ptr<SentenceBoundary> sentence_boundary_;
   std::unique_ptr<Serializer> spec_serializer_;
   std::set<string> sentence_boundary_exceptions_;
+  bool do_preprocess = false;
+  bool do_postprocess = false;
+
 
   DISALLOW_COPY_AND_ASSIGN(Normalizer);
 };
