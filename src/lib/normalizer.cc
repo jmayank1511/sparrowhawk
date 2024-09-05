@@ -100,6 +100,7 @@ bool Normalizer::Setup(const string &pathname, bool post_process, bool pre_proce
     catch (...){
       LOG(ERROR) << "Failed to load preprocessor" << proto_string;
       }
+    }
   if (configuration.has_postprocessor_grammar()) {
 	try{
       post_processor_rules_.reset(new RuleSystem);
