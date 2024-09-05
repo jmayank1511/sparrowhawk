@@ -63,9 +63,14 @@ bool Normalizer::Setup(const string &pathname, bool post_process, bool pre_proce
     proto_string += "preprocessor_grammar:  \"preprocessor.ascii_proto\"\n";
   if (post_process)
     proto_string += "postprocessor_grammar:  \"postprocessor.ascii_proto\"\n";
-
-  if (!google::protobuf::TextFormat::ParseFromString(proto_string, &configuration))
-    return false;
+  LOG(INFO) << "Proto String: " << proto_string;
+  try{
+      if (!google::protobuf::TextFormat::ParseFromString(proto_string, &configuration))
+        return false;
+      }
+  catch (){
+    LOG(ERROR) << "Failed to parse proto string" << proto_string;
+    }
 
   tokenizer_classifier_rules_.reset(new RuleSystem);
   if (!tokenizer_classifier_rules_->LoadGrammarProtoFromString(
