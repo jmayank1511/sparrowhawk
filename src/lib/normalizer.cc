@@ -91,7 +91,7 @@ bool Normalizer::Setup(const string &pathname, bool post_process, bool pre_proce
     try{
       pre_processor_rules_.reset(new RuleSystem);
       if (pre_processor_rules_->LoadGrammarProtoFromString(
-        kDefaultPreProcessorProto, pathname,
+        kDefaultPreProcessorProto,
         pathname)
         this->do_preprocess = true;
       else
