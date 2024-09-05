@@ -68,7 +68,7 @@ bool Normalizer::Setup(const string &pathname, bool post_process, bool pre_proce
       if (!google::protobuf::TextFormat::ParseFromString(proto_string, &configuration))
         return false;
       }
-  catch (){
+  catch (...){
     LOG(ERROR) << "Failed to parse proto string" << proto_string;
     }
 
@@ -90,27 +90,27 @@ bool Normalizer::Setup(const string &pathname, bool post_process, bool pre_proce
   if (configuration.has_preprocessor_grammar()) {
     try{
       pre_processor_rules_.reset(new RuleSystem);
-      if (pre_processor_rules_->LoadGrammar(
-        configuration.preprocessor_grammar(),
-        pathname))
+      if (pre_processor_rules_->LoadGrammarProtoFromString(
+        kDefaultPreProcessorProto, pathname,
+        pathname)
         this->do_preprocess = true;
       else
         LoggerWarn("Unable to load pre_processor_grammar from: ");
       }
-    catch (){
+    catch (...){
       LOG(ERROR) << "Failed to load preprocessor" << proto_string;
       }
   if (configuration.has_postprocessor_grammar()) {
 	try{
       post_processor_rules_.reset(new RuleSystem);
-      if (post_processor_rules_->LoadGrammar(
-        configuration.postprocessor_grammar(),
+      if (post_processor_rules_->LoadGrammarProtoFromString(
+        kDefaultPostProcessorProto,
         pathname))
         this->do_postprocess = true;
       else
         LoggerWarn("Unable to load post_processor_grammar");
       }
-    catch (){
+    catch (...){
       LOG(ERROR) << "Failed to load postprocessor" << proto_string;
       }
   }
