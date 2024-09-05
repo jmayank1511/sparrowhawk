@@ -63,9 +63,14 @@ bool Normalizer::Setup(const string &pathname, bool post_process, bool pre_proce
     proto_string += "preprocessor_grammar:  \"preprocessor.ascii_proto\"\n";
   if (post_process)
     proto_string += "postprocessor_grammar:  \"postprocessor.ascii_proto\"\n";
-
-  if (!google::protobuf::TextFormat::ParseFromString(proto_string, &configuration))
-    return false;
+  LOG(INFO) << "Proto String: " << proto_string;
+  try{
+      if (!google::protobuf::TextFormat::ParseFromString(proto_string, &configuration))
+        return false;
+      }
+  catch (...){
+    LOG(ERROR) << "Failed to parse proto string" << proto_string;
+    }
 
   tokenizer_classifier_rules_.reset(new RuleSystem);
   if (!tokenizer_classifier_rules_->LoadGrammarProtoFromString(
@@ -83,23 +88,33 @@ bool Normalizer::Setup(const string &pathname, bool post_process, bool pre_proce
   sentence_boundary_->AddSentenceBoundaryExceptions(kDefaultSentenceBoundaryExceptions);
 
   if (configuration.has_preprocessor_grammar()) {
-    pre_processor_rules_.reset(new RuleSystem);
-    if (pre_processor_rules_->LoadGrammar(
-      configuration.preprocessor_grammar(),
-      pathname))
-      this->do_preprocess = true;
-    else
-      LoggerWarn("Unable to load pre_processor_grammar from: ");
+    try{
+      pre_processor_rules_.reset(new RuleSystem);
+      if (pre_processor_rules_->LoadGrammarProtoFromString(
+        kDefaultPreProcessorProto,
+        pathname))
+        this->do_preprocess = true;
+      else
+        LoggerWarn("Unable to load pre_processor_grammar from: ");
+      }
+    catch (...){
+      LOG(ERROR) << "Failed to load preprocessor" << proto_string;
+      }
     }
   if (configuration.has_postprocessor_grammar()) {
-    post_processor_rules_.reset(new RuleSystem);
-    if (post_processor_rules_->LoadGrammar(
-        configuration.postprocessor_grammar(),
+	try{
+      post_processor_rules_.reset(new RuleSystem);
+      if (post_processor_rules_->LoadGrammarProtoFromString(
+        kDefaultPostProcessorProto,
         pathname))
-      this->do_postprocess = true;
-    else
-      LoggerWarn("Unable to load post_processor_grammar");
-    }
+        this->do_postprocess = true;
+      else
+        LoggerWarn("Unable to load post_processor_grammar");
+      }
+    catch (...){
+      LOG(ERROR) << "Failed to load postprocessor" << proto_string;
+      }
+  }
 
   return true;
 }
