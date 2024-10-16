@@ -35,4 +35,10 @@ message SparrowhawkConfiguration {
   // Optional file with SerializeSpec for verbalizer as a text proto. If the
   // the field is not set, we resort to protobuf serializer.
   optional string serialization_spec = 5;
+  
+  // Optional postprocessor and preprocessor grammars. Require for some languages 
+   
+  optional string postprocessor_grammar = 6;
+  optional string preprocessor_grammar = 7;
+
 }

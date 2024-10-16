@@ -39,6 +39,10 @@ const std::string kDefaultVerbalizerProto =
   "grammar_file: \"verbalize.far\"\ngrammar_name: \"Verbalizer\"\nrules { main: \"ALL\" redup: \"REDUP\" }\n";
 const std::string kDefaultTokenizerProto =
   "grammar_file: \"tokenize_and_classify.far\"\ngrammar_name: \"TokenizerClassifier\"\nrules { main: \"TOKENIZE_AND_CLASSIFY\" }\n";
+const std::string kDefaultPostProcessorProto =
+  "grammar_file: \"post_process.far\"\ngrammar_name: \"PostProcessor\"\nrules { main: \"POSTPROCESSOR\" }\n";
+const std::string kDefaultPreProcessorProto =
+  "grammar_file: \"pre_process.far\"\ngrammar_name: \"PreProcessor\"\nrules { main: \"PREPROCESSOR\" }\n";
 
 
 std::vector<std::string> kDefaultSentenceBoundaryExceptions = {"Mr.", "Dr.", "Mrs.", "St.", "Jan.", "Feb.", "Mar.", "Apr.", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec." };
@@ -48,16 +52,25 @@ Normalizer::Normalizer() { }
 Normalizer::~Normalizer() { }
 
   //Riva specific entry with defaults
-bool Normalizer::Setup(const string &pathname)
+bool Normalizer::Setup(const string &pathname, bool post_process, bool pre_process)
 {
   SparrowhawkConfiguration configuration;
   string proto_string = "tokenizer_grammar:  \"tokenizer.ascii_proto\"\n"
                         "verbalizer_grammar:  \"verbalizer.ascii_proto\"\n"
                         "sentence_boundary_regexp: \"[\\\\.:!\\\\?] \"\n"
     "sentence_boundary_exceptions_file: \"sentence_boundary_exceptions.txt\"\n";
-
-  if (!google::protobuf::TextFormat::ParseFromString(proto_string, &configuration))
-    return false;
+  if (pre_process)
+    proto_string += "preprocessor_grammar:  \"preprocessor.ascii_proto\"\n";
+  if (post_process)
+    proto_string += "postprocessor_grammar:  \"postprocessor.ascii_proto\"\n";
+  LOG(INFO) << "Proto String: " << proto_string;
+  try{
+      if (!google::protobuf::TextFormat::ParseFromString(proto_string, &configuration))
+        return false;
+      }
+  catch (...){
+    LOG(ERROR) << "Failed to parse proto string" << proto_string;
+    }
 
   tokenizer_classifier_rules_.reset(new RuleSystem);
   if (!tokenizer_classifier_rules_->LoadGrammarProtoFromString(
@@ -73,6 +86,35 @@ bool Normalizer::Setup(const string &pathname)
   string sentence_boundary_regexp = kDefaultSentenceBoundaryRegexp;
   sentence_boundary_.reset(new SentenceBoundary(sentence_boundary_regexp));
   sentence_boundary_->AddSentenceBoundaryExceptions(kDefaultSentenceBoundaryExceptions);
+
+  if (configuration.has_preprocessor_grammar()) {
+    try{
+      pre_processor_rules_.reset(new RuleSystem);
+      if (pre_processor_rules_->LoadGrammarProtoFromString(
+        kDefaultPreProcessorProto,
+        pathname))
+        this->do_preprocess = true;
+      else
+        LoggerWarn("Unable to load pre_processor_grammar from: ");
+      }
+    catch (...){
+      LOG(ERROR) << "Failed to load preprocessor" << proto_string;
+      }
+    }
+  if (configuration.has_postprocessor_grammar()) {
+	try{
+      post_processor_rules_.reset(new RuleSystem);
+      if (post_processor_rules_->LoadGrammarProtoFromString(
+        kDefaultPostProcessorProto,
+        pathname))
+        this->do_postprocess = true;
+      else
+        LoggerWarn("Unable to load post_processor_grammar");
+      }
+    catch (...){
+      LOG(ERROR) << "Failed to load postprocessor" << proto_string;
+      }
+  }
 
   return true;
 }
@@ -123,14 +165,46 @@ bool Normalizer::Setup(const string &configuration_proto,
       return false;
     }
   }
+  if (configuration.has_preprocessor_grammar()) {
+    pre_processor_rules_.reset(new RuleSystem);
+    if (pre_processor_rules_->LoadGrammar(
+            configuration.preprocessor_grammar(),
+            pathname_prefix))
+      this->do_preprocess = true;
+    else
+      LoggerWarn("Unable to load pre_processor_grammar from: ");
+  }
+  if (configuration.has_postprocessor_grammar()) {
+    post_processor_rules_.reset(new RuleSystem);
+      if (post_processor_rules_->LoadGrammar(
+              configuration.postprocessor_grammar(),
+              pathname_prefix))
+        this->do_postprocess = true;
+    else
+      LoggerWarn("Unable to load post_processor_grammar");
+  }
   return true;
 }
+
 
 bool Normalizer::Normalize(const string &input, string *output) const {
   std::unique_ptr<Utterance> utt;
   utt.reset(new Utterance);
+  string pp_output=input.c_str();
+  if (this->do_preprocess){
+    pre_processor_rules_->ApplyRules(input,&pp_output,false);
+  }
+
   if (!Normalize(utt.get(), input)) return false;
   *output = LinearizeWords(utt.get());
+
+  if (this->do_postprocess){
+    string pp_input = LinearizeWords(utt.get());
+    post_processor_rules_->ApplyRules(pp_input,output,false);
+  }
+  else
+    *output = LinearizeWords(utt.get());
+
   return true;
 }
 
