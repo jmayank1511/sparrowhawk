@@ -36,6 +36,8 @@ using std::string;
 using std::vector;
 
 #include <fst/compat.h>
+#include <fst/log.h>
+#include <fst/types.h>
 #include <sparrowhawk/items.pb.h>
 #include <sparrowhawk/sentence_boundary.h>
 #include <sparrowhawk/sparrowhawk_configuration.pb.h>

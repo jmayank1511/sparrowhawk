@@ -28,6 +28,7 @@ using std::string;
 using std::vector;
 
 #include <fst/compat.h>
+#include <fst/types.h>
 #include <re2/re2.h>
 
 namespace speech {
