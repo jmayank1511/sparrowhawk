@@ -195,7 +195,7 @@ bool Normalizer::Normalize(const string &input, string *output) const {
     pre_processor_rules_->ApplyRules(input,&pp_output,false);
   }
 
-  if (!Normalize(utt.get(), input)) return false;
+  if (!Normalize(utt.get(), pp_output)) return false;
   *output = LinearizeWords(utt.get());
 
   if (this->do_postprocess){
