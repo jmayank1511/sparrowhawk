@@ -187,11 +187,12 @@ bool Normalizer::Setup(const string &configuration_proto,
 }
 
 
-bool Normalizer::Normalize(const string &input, string *output) const {
+bool Normalizer::Normalize(
+    const string &input, string *output, bool enable_preprocessing) const {
   std::unique_ptr<Utterance> utt;
   utt.reset(new Utterance);
   string pp_output=input.c_str();
-  if (this->do_preprocess){
+  if (this->do_preprocess && enable_preprocessing){
     pre_processor_rules_->ApplyRules(input,&pp_output,false);
   }
 

@@ -72,7 +72,9 @@ class Normalizer {
   // normalizer.cc
   // Interface to the normalization system for callers that want to be agnostic
   // about utterances.
-  bool Normalize(const string &input, string *output) const;
+  bool Normalize(
+      const string &input, string *output,
+      bool enable_preprocessing = false) const;
 
   // normalizer.cc
   // Interface to the normalization system for callers that want to be agnostic
