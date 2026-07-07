@@ -193,7 +193,13 @@ bool Normalizer::Normalize(
   utt.reset(new Utterance);
   string pp_output=input.c_str();
   if (this->do_preprocess && enable_preprocessing){
-    pre_processor_rules_->ApplyRules(input,&pp_output,false);
+    if (!pre_processor_rules_->ApplyRules(input,&pp_output,false)) return false;
+    // Deleting an all-filler input is a successful preprocessing result. There is nothing left
+    // for the tokenizer or verbalizer to process.
+    if (pp_output.find_first_not_of(" \t\n\r\f\v") == string::npos) {
+      output->clear();
+      return true;
+    }
   }
 
   if (!Normalize(utt.get(), pp_output)) return false;
