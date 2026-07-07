@@ -187,19 +187,25 @@ bool Normalizer::Setup(const string &configuration_proto,
 }
 
 
+bool Normalizer::MaybePreprocess(
+    const string &input, string *output, bool enable_preprocessing) const {
+  *output = input;
+  return !this->do_preprocess || !enable_preprocessing ||
+         pre_processor_rules_->ApplyRules(input, output, false);
+}
+
 bool Normalizer::Normalize(
     const string &input, string *output, bool enable_preprocessing) const {
   std::unique_ptr<Utterance> utt;
   utt.reset(new Utterance);
-  string pp_output=input.c_str();
-  if (this->do_preprocess && enable_preprocessing){
-    if (!pre_processor_rules_->ApplyRules(input,&pp_output,false)) return false;
-    // Deleting an all-filler input is a successful preprocessing result. There is nothing left
-    // for the tokenizer or verbalizer to process.
-    if (pp_output.find_first_not_of(" \t\n\r\f\v") == string::npos) {
-      output->clear();
-      return true;
-    }
+  string pp_output;
+  if (!MaybePreprocess(input, &pp_output, enable_preprocessing)) return false;
+  // Deleting an all-filler input is a successful preprocessing result. There is nothing left
+  // for the tokenizer or verbalizer to process.
+  if (this->do_preprocess && enable_preprocessing &&
+      pp_output.find_first_not_of(" \t\n\r\f\v") == string::npos) {
+    output->clear();
+    return true;
   }
 
   if (!Normalize(utt.get(), pp_output)) return false;
@@ -220,10 +226,17 @@ bool Normalizer::Normalize(Utterance *utt, const string &input) const {
 }
 
 bool Normalizer::NormalizeAndShowLinks(
-    const string &input, string *output) const {
+    const string &input, string *output, bool enable_preprocessing) const {
   std::unique_ptr<Utterance> utt;
   utt.reset(new Utterance);
-  if (!Normalize(utt.get(), input)) return false;
+  string pp_output;
+  if (!MaybePreprocess(input, &pp_output, enable_preprocessing)) return false;
+  if (this->do_preprocess && enable_preprocessing &&
+      pp_output.find_first_not_of(" \t\n\r\f\v") == string::npos) {
+    output->clear();
+    return true;
+  }
+  if (!Normalize(utt.get(), pp_output)) return false;
   *output = ShowLinks(utt.get());
   return true;
 }

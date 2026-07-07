@@ -79,7 +79,9 @@ class Normalizer {
   // normalizer.cc
   // Interface to the normalization system for callers that want to be agnostic
   // about utterances. Shows the token/word alignment.
-  bool NormalizeAndShowLinks(const string &input, string *output) const;
+  bool NormalizeAndShowLinks(
+      const string &input, string *output,
+      bool enable_preprocessing = false) const;
 
   // normalizer_utils.cc
   // Helper for linearizing words from an utterance into a string
@@ -97,6 +99,11 @@ class Normalizer {
   std::vector<string> SentenceSplitter(const string &input) const;
 
  private:
+  // Applies the optional preprocessor before normalization.
+  bool MaybePreprocess(
+      const string &input, string *output,
+      bool enable_preprocessing) const;
+
   // normalizer.cc
   // Internal interface to normalization.
   bool Normalize(Utterance *utt, const string &input) const;
