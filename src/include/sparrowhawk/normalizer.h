@@ -99,14 +99,11 @@ class Normalizer {
   std::vector<string> SentenceSplitter(const string &input) const;
 
  private:
-  // Applies the optional preprocessor before normalization.
-  bool MaybePreprocess(
-      const string &input, string *output,
-      bool enable_preprocessing) const;
-
   // normalizer.cc
   // Internal interface to normalization.
-  bool Normalize(Utterance *utt, const string &input) const;
+  bool Normalize(
+      Utterance *utt, const string &input, bool enable_preprocessing,
+      bool *preprocessing_deleted_input) const;
 
   // normalizer_utils.cc
   // As in Kestrel, adds a phrase and silence.
@@ -142,7 +139,9 @@ class Normalizer {
   // normalizer.cc
   // Performs tokenization and classification on the input utterance, the first
   // step of normalization
-  bool TokenizeAndClassifyUtt(Utterance *utt, const string &input) const;
+  bool TokenizeAndClassifyUtt(
+      Utterance *utt, const string &input, bool enable_preprocessing,
+      bool *preprocessing_deleted_input) const;
 
   // normalizer_utils.cc
   // Serializes the contents of a Token to a string

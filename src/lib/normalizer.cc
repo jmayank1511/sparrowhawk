@@ -187,28 +187,20 @@ bool Normalizer::Setup(const string &configuration_proto,
 }
 
 
-bool Normalizer::MaybePreprocess(
-    const string &input, string *output, bool enable_preprocessing) const {
-  *output = input;
-  return !this->do_preprocess || !enable_preprocessing ||
-         pre_processor_rules_->ApplyRules(input, output, false);
-}
-
 bool Normalizer::Normalize(
     const string &input, string *output, bool enable_preprocessing) const {
   std::unique_ptr<Utterance> utt;
   utt.reset(new Utterance);
-  string pp_output;
-  if (!MaybePreprocess(input, &pp_output, enable_preprocessing)) return false;
-  // Deleting an all-filler input is a successful preprocessing result. There is nothing left
-  // for the tokenizer or verbalizer to process.
-  if (this->do_preprocess && enable_preprocessing &&
-      pp_output.find_first_not_of(" \t\n\r\f\v") == string::npos) {
+  bool preprocessing_deleted_input = false;
+  if (!Normalize(
+          utt.get(), input, enable_preprocessing,
+          &preprocessing_deleted_input)) {
+    return false;
+  }
+  if (preprocessing_deleted_input) {
     output->clear();
     return true;
   }
-
-  if (!Normalize(utt.get(), pp_output)) return false;
   *output = LinearizeWords(utt.get());
 
   if (this->do_postprocess){
@@ -221,36 +213,77 @@ bool Normalizer::Normalize(
   return true;
 }
 
-bool Normalizer::Normalize(Utterance *utt, const string &input) const {
-  return TokenizeAndClassifyUtt(utt, input) && VerbalizeUtt(utt);
+bool Normalizer::Normalize(
+    Utterance *utt, const string &input, bool enable_preprocessing,
+    bool *preprocessing_deleted_input) const {
+  return TokenizeAndClassifyUtt(
+             utt, input, enable_preprocessing,
+             preprocessing_deleted_input) &&
+         (*preprocessing_deleted_input || VerbalizeUtt(utt));
 }
 
 bool Normalizer::NormalizeAndShowLinks(
     const string &input, string *output, bool enable_preprocessing) const {
   std::unique_ptr<Utterance> utt;
   utt.reset(new Utterance);
-  string pp_output;
-  if (!MaybePreprocess(input, &pp_output, enable_preprocessing)) return false;
-  if (this->do_preprocess && enable_preprocessing &&
-      pp_output.find_first_not_of(" \t\n\r\f\v") == string::npos) {
+  bool preprocessing_deleted_input = false;
+  if (!Normalize(
+          utt.get(), input, enable_preprocessing,
+          &preprocessing_deleted_input)) {
+    return false;
+  }
+  if (preprocessing_deleted_input) {
     output->clear();
     return true;
   }
-  if (!Normalize(utt.get(), pp_output)) return false;
   *output = ShowLinks(utt.get());
   return true;
 }
 
-bool Normalizer::TokenizeAndClassifyUtt(Utterance *utt,
-                                        const string &input) const {
+bool Normalizer::TokenizeAndClassifyUtt(
+    Utterance *utt, const string &input, bool enable_preprocessing,
+    bool *preprocessing_deleted_input) const {
   typedef fst::StringCompiler<fst::StdArc> Compiler;  // what is this
+  typedef fst::StringPrinter<fst::StdArc> Printer;
   Compiler compiler(fst::TokenType::BYTE);
-  MutableTransducer input_fst, output;
+  MutableTransducer input_fst;
   if (!compiler(input, &input_fst)) {
     LoggerError("Failed to compile input string \"%s\"", input.c_str());
     return false;
   }
-  if (!tokenizer_classifier_rules_->ApplyRules(input_fst,
+
+  *preprocessing_deleted_input = false;
+  MutableTransducer tokenizer_input(input_fst);
+  if (this->do_preprocess && enable_preprocessing) {
+    MutableTransducer preprocess_lattice;
+    if (!pre_processor_rules_->ApplyRules(
+            input_fst, &preprocess_lattice, false)) {
+      return false;
+    }
+
+    // Select the same best preprocessing path used by the string API, but do
+    // not project it to its output labels. Keeping both sides of this FST
+    // preserves the relationship between the original input positions and
+    // the preprocessed text passed to the tokenizer.
+    fst::ShortestPath(preprocess_lattice, &tokenizer_input);
+
+    MutableTransducer preprocessed_output(tokenizer_input);
+    fst::Project(&preprocessed_output, fst::PROJECT_OUTPUT);
+    fst::RmEpsilon(&preprocessed_output);
+    Printer printer(fst::TokenType::BYTE);
+    string preprocessed_text;
+    if (!printer(preprocessed_output, &preprocessed_text)) {
+      LoggerError("Failed to print preprocessed input");
+      return false;
+    }
+    if (preprocessed_text.find_first_not_of(" \t\n\r\f\v") == string::npos) {
+      *preprocessing_deleted_input = true;
+      return true;
+    }
+  }
+
+  MutableTransducer output;
+  if (!tokenizer_classifier_rules_->ApplyRules(tokenizer_input,
                                                &output,
                                                true /*  use_lookahead */)) {
     LoggerError("Failed to tokenize \"%s\"", input.c_str());
